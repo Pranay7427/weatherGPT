@@ -1,10 +1,22 @@
 # WeatherGPT: Conversational AI for Weather Forecasting, Alerts & Climate Information
 
+[![Live Demo](https://img.shields.io/badge/Live_Demo-weathergpt--olive--gamma.vercel.app-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://weathergpt-olive-gamma.vercel.app)
 ![WeatherGPT Banner](https://img.shields.io/badge/WeatherGPT-v2.0-blue?style=for-the-badge&logo=fastapi)
-![Python 3.13](https://img.shields.io/badge/Python-3.13-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Python 3.12+](https://img.shields.io/badge/Python-3.12+-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688?style=for-the-badge&logo=fastapi&logoColor=white)
 ![Zero GPU Required](https://img.shields.io/badge/Compute-Zero%20GPU%20Required-success?style=for-the-badge)
 ![Supported Languages](https://img.shields.io/badge/Languages-8%20Indian%20Languages-orange?style=for-the-badge)
+
+> 🌐 **Live Web Application:** [https://weathergpt-olive-gamma.vercel.app](https://weathergpt-olive-gamma.vercel.app)
+
+<div align="center">
+  <br/>
+  <a href="https://weathergpt-olive-gamma.vercel.app" target="_blank">
+    <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https%3A%2F%2Fweathergpt-olive-gamma.vercel.app&margin=10" alt="WeatherGPT Live QR Code" width="180" height="180"/>
+  </a>
+  <p><b>📱 Scan or click the QR code to open WeatherGPT on mobile/desktop</b></p>
+  <br/>
+</div>
 
 WeatherGPT is an intelligent meteorological conversational platform engineered to unify fragmented weather bulletins, numerical weather predictions (NWP), disaster early warning systems, and climate reanalysis into an accessible, actionable natural language interface.
 
