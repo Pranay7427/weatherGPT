@@ -8,3 +8,5 @@ env/
 venv/
 .vercel
 .pytest_cache/
+
+.vercel

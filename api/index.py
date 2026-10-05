@@ -7,13 +7,25 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from app.main import app as fastapi_app
 
 async def app(scope, receive, send):
-    if scope["type"] in ("http", "websocket"):
-        # Vercel rewrites might set scope['path'] to the destination ('/api/index.py').
-        # Recover the original user URL path from x-matched-path header if available.
-        headers = dict(scope.get("headers", []))
-        matched_path = headers.get(b"x-matched-path", b"").decode("utf-8")
-        if matched_path and matched_path != "/api/index.py":
-            scope["path"] = matched_path
-        elif scope["path"] == "/api/index.py":
-            scope["path"] = "/"
+    if scope["type"] == "http":
+        headers = {k.decode("utf-8", errors="ignore").lower(): v.decode("utf-8", errors="ignore") for k, v in scope.get("headers", [])}
+        path = scope.get("path", "")
+        
+        # Check potential Vercel routing headers
+        matched = (
+            headers.get("x-matched-path")
+            or headers.get("x-forwarded-uri")
+            or headers.get("x-vercel-matched-path")
+            or ""
+        )
+        
+        # If the path arrived as the handler script, recover the client's actual path
+        if path in ("/api/index.py", "/api/index", "/api", "/api/"):
+            if matched and matched not in ("/api/index.py", "/api/index", "/api", "/api/"):
+                scope["path"] = matched.split("?")[0]
+            else:
+                scope["path"] = "/"
+        elif matched and not path.startswith("/api/"):
+            scope["path"] = matched.split("?")[0]
+            
     await fastapi_app(scope, receive, send)
