@@ -1,0 +1,19 @@
+{
+  "name": "WeatherGPT - AI Meteorological Intelligence",
+  "short_name": "WeatherGPT",
+  "description": "Conversational AI for Weather Forecasting, Early Warnings & Climate Intelligence",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0f1d",
+  "theme_color": "#0284c7",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/static/assets/icons/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["weather", "productivity", "utilities"]
+}

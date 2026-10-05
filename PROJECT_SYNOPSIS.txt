@@ -1,0 +1,90 @@
+================================================================================
+                               PROJECT SYNOPSIS
+================================================================================
+
+Project Title : WeatherGPT - AI Weather Assistant & Advisory System
+Domain        : Artificial Intelligence & Web Development
+Target Users  : Farmers, Travelers, Fishermen, Pilots, General Public
+
+================================================================================
+1. PROBLEM STATEMENT
+================================================================================
+Current weather apps have three simple problems:
+1. Too Technical: They show confusing charts, graphs, and numbers that normal 
+   people cannot easily understand.
+2. Not Actionable: They only tell the temperature (e.g., "32°C, Sunny"), but 
+   they don't answer real questions like "Can I spray pesticide today?", 
+   "Should I carry an umbrella?", or "Is it safe to go fishing?".
+3. Language Barrier: Most apps are in English and text-only, making them hard 
+   for rural farmers and non-English speakers to use.
+
+
+================================================================================
+2. WHY WE CHOSE THIS PROJECT
+================================================================================
+- Direct Help to Farmers: Farming depends heavily on rain and temperature. 
+  Giving farmers clear advice in their own language saves crops and money.
+- Better Decision Making: People need direct answers to daily questions instead 
+  of guessing from raw weather numbers.
+- Voice Support: Adding voice queries in regional languages helps anyone use 
+  the app easily without typing.
+
+
+================================================================================
+3. HOW WE ARE SOLVING IT
+================================================================================
+WeatherGPT is a smart conversational AI assistant that turns complex weather 
+data into simple, everyday advice:
+
+1. Ask in Normal Words (Voice or Text):
+   Users can type or speak in 8 Indian languages (Hindi, Bengali, Telugu, 
+   Tamil, Marathi, Gujarati, Kannada, English) and get instant answers.
+
+2. Sector-Specific Advice:
+   - Agriculture (Kisan): Tells farmers when to irrigate, spray medicine, or sow crops.
+   - Everyday Travel: Tells users if they need an umbrella, warm clothes, or if a picnic is fine.
+   - Aviation & Marine: Gives pilots and fishermen simple wind, wave, and safety reports.
+
+3. Accurate Multi-Model Forecast:
+   Instead of trusting just one forecast, WeatherGPT compares 4 major world 
+   weather models (US GFS, European ECMWF, German ICON, WRF) and gives a 
+   clear "Confidence Score %".
+
+4. Live Alerts & Radar:
+   Shows live rain radar maps and real-time government disaster alerts 
+   (cyclones, heatwaves, heavy rain).
+
+5. Dual-Core AI (Fast & Reliable):
+   - Fast Built-in Engine: Answers common questions instantly without internet lag or API cost.
+   - Smart Cloud AI: Handles complex conversational questions without making up fake weather numbers.
+
+
+================================================================================
+4. TECH STACK
+================================================================================
+- Backend      : Python, FastAPI (Fast and lightweight web server)
+- Frontend     : HTML5, CSS3, JavaScript (Clean, responsive web page)
+- AI Engine    : Custom Rule-Based Engine + Google Gemini API
+- Voice Engine : Web Speech API (Speech-to-Text & Text-to-Speech)
+- Maps & Visual: Leaflet.js (Map), Chart.js (Graphs)
+- Deployment   : Docker / Local Python Server
+
+
+================================================================================
+5. APIS & DATA SOURCES USED
+================================================================================
+1. Open-Meteo API     : For live temperature, humidity, wind, rain, and pressure.
+2. Weather Models     : NOAA GFS (US), ECMWF (Europe), DWD ICON (Germany).
+3. Air Quality (AQI)  : European & US EPA data (PM2.5, pollution levels).
+4. RainViewer API     : Live animated Doppler rain radar maps.
+5. IMD / WMO Alerts   : Official weather and disaster warnings.
+6. OpenStreetMap      : Search location by city or district name.
+
+
+================================================================================
+6. KEY ADVANTAGES
+================================================================================
+- 100% Free & Lightweight: Works without expensive GPUs or servers.
+- Accurate & Safe: Never invents fake weather data.
+- Easy for Everyone: Simple language, voice-enabled, works on mobile & desktop.
+================================================================================

@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  weathergpt:
+    build: .
+    container_name: weathergpt-ai
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=False
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+    restart: unless-stopped

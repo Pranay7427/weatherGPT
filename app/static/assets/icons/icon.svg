@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0369a1"/>
+      <stop offset="50%" stop-color="#0284c7"/>
+      <stop offset="100%" stop-color="#0a0f1d"/>
+    </linearGradient>
+    <linearGradient id="sunGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fde047"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+    <linearGradient id="cloudGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#cbd5e1"/>
+    </linearGradient>
+    <linearGradient id="boltGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#60a5fa"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background rounded rect -->
+  <rect width="512" height="512" rx="110" fill="url(#bgGrad)"/>
+
+  <!-- Sun -->
+  <circle cx="340" cy="180" r="75" fill="url(#sunGrad)"/>
+
+  <!-- Cloud -->
+  <path d="M180 340 h200 a65 65 0 0 0 0 -130 a75 75 0 0 0 -135 -30 a60 60 0 0 0 -65 60 a50 50 0 0 0 0 100 z" fill="url(#cloudGrad)"/>
+
+  <!-- Lightning Bolt (AI Power) -->
+  <path d="M255 270 L220 350 L265 350 L235 435 L310 330 L270 330 Z" fill="url(#boltGrad)" stroke="#ffffff" stroke-width="6" stroke-linejoin="round"/>
+</svg>

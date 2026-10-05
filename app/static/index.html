@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeatherGPT | Conversational AI for Weather, Alerts & Climate Intelligence</title>
+    <meta name="description" content="AI-powered weather intelligence platform integrating NWP models, disaster early warnings, multilingual decision support for agriculture and aviation.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Leaflet GIS Map CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+    <!-- PWA Manifest & Mobile Icons -->
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#0284c7">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="/static/assets/icons/icon.svg">
+
+    <!-- Application Stylesheet -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <!-- Background Atmospheric Particles Canvas -->
+    <canvas id="weather-canvas"></canvas>
+
+    <div class="app-wrapper">
+        <!-- Navigation Header -->
+        <header class="navbar">
+            <div class="brand">
+                <div class="brand-icon">⚡</div>
+                <div>
+                    <h1 class="brand-title" data-i18n="app_title">WeatherGPT</h1>
+                    <p class="brand-subtitle" data-i18n="app_subtitle">Meteorological AI & Early Warning Dissemination</p>
+                </div>
+            </div>
+
+            <!-- Real-Time Live Clock Badge -->
+            <div class="nav-clock" id="nav-live-clock" title="Live Clock (Current Time)">
+                <span class="clock-live-dot"></span>
+                <span class="clock-icon">🕒</span>
+                <span id="nav-time-str">--:--:--</span>
+                <span class="nav-date-separator">•</span>
+                <span id="nav-date-str">--</span>
+            </div>
+
+            <div class="nav-actions">
+                <div class="lang-selector">
+                    <select id="lang-select" aria-label="Select Language">
+                        <option value="en">English</option>
+                        <option value="hi">हिन्दी (Hindi)</option>
+                        <option value="bn">বাংলা (Bengali)</option>
+                        <option value="te">తెలుగు (Telugu)</option>
+                        <option value="ta">தமிழ் (Tamil)</option>
+                        <option value="mr">मराठी (Marathi)</option>
+                        <option value="gu">ગુજરાતી (Gujarati)</option>
+                        <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                    </select>
+                </div>
+
+                <button class="btn-icon" id="btn-theme-toggle" title="Toggle Light / Dark Mode">
+                    <span id="theme-icon">☀️</span> <span id="theme-text">Light</span>
+                </button>
+                <button class="btn-icon" id="btn-install-app" title="Download & Install WeatherGPT App on this Device" style="display:none;background:linear-gradient(135deg, #0284c7, #38bdf8);color:#fff;border:none;">
+                    📲 <span>Install App</span>
+                </button>
+                <button class="btn-icon" id="btn-open-phone" title="Open on Mobile Phone">
+                    📱 <span>Phone</span>
+                </button>
+                <button class="btn-icon" id="btn-open-settings" title="Settings & API Keys">
+                    ⚙️ <span data-i18n="settings">Settings</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Disaster Alert Banner / Ticker -->
+        <div class="alert-ticker-container" id="alert-banner">
+            <span class="ticker-badge">⚠️ EARLY WARNING</span>
+            <div class="ticker-content" id="alert-ticker-text">
+                Fetching real-time meteorological early warning bulletins...
+            </div>
+        </div>
+
+        <!-- Global Search Section -->
+        <section class="search-container">
+            <div class="search-bar-inner">
+                <div class="search-input-wrapper">
+                    <span class="search-icon">🔍</span>
+                    <input 
+                        type="text" 
+                        id="city-search-input" 
+                        class="search-input" 
+                        placeholder="Search Indian city or district (e.g., Delhi, Pune, Ludhiana)..." 
+                        autocomplete="off"
+                        data-i18n-placeholder="search_placeholder"
+                    />
+                    <div id="location-dropdown" class="location-dropdown"></div>
+                </div>
+                <button class="btn-locate" id="btn-locate-me" title="Use Device Location">
+                    📍 <span data-i18n="use_my_location">My GPS Location</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Tab Navigation Bar -->
+        <nav class="tabs-nav-container">
+            <div class="tabs-nav">
+                <button class="tab-btn active" data-tab="chat">
+                    💬 <span data-i18n="tab_chat">AI Weather Agent</span>
+                </button>
+                <button class="tab-btn" data-tab="dashboard">
+                    ☀️ <span data-i18n="tab_dashboard">Live Weather</span>
+                </button>
+                <button class="tab-btn" data-tab="nwp">
+                    📊 <span data-i18n="tab_nwp">NWP Models (GFS/WRF)</span>
+                </button>
+                <button class="tab-btn" data-tab="alerts">
+                    🚨 <span data-i18n="tab_alerts">Disaster Alerts</span>
+                </button>
+                <button class="tab-btn" data-tab="advisory">
+                    🌾 <span data-i18n="tab_advisory">Decision Support</span>
+                </button>
+                <button class="tab-btn" data-tab="radar">
+                    🛰️ <span data-i18n="tab_radar">Radar & GIS</span>
+                </button>
+                <button class="tab-btn" data-tab="climate">
+                    📈 <span data-i18n="tab_climate">Climate Trends</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Workspace -->
+        <main class="main-content">
+
+            <!-- TAB 1: AI WEATHER AGENT CHATBOT -->
+            <section id="tab-chat" class="tab-pane active">
+                <div class="glass-card chat-container">
+                    <div class="chat-messages" id="chat-messages-container">
+                        <!-- Chat messages injected by chat.js -->
+                    </div>
+
+                    <!-- Quick suggestion prompt chips -->
+                    <div class="quick-chips-row">
+                        <button class="chip-btn" onclick="sendQuickPrompt('Whether it is suitable to plan a picnic tomorrow?')">🧺 Picnic tomorrow?</button>
+                        <button class="chip-btn" onclick="sendQuickPrompt('Will it rain tomorrow in Delhi?')">🌧️ Rain tomorrow?</button>
+                        <button class="chip-btn" onclick="sendQuickPrompt('Should I farm rice in Indore?')">🌾 Should I farm rice?</button>
+                        <button class="chip-btn" onclick="sendQuickPrompt('Aviation weather briefing for Mumbai airport')">✈️ Flight METAR/TAF</button>
+                        <button class="chip-btn" onclick="sendQuickPrompt('Any cyclone warning near Odisha coast?')">🌀 Cyclone alert</button>
+                    </div>
+
+                    <!-- Voice Listening Indicator -->
+                    <div id="voice-status-indicator" style="display:none;padding:8px 24px;background:rgba(239,68,68,0.2);align-items:center;gap:10px;">
+                        <div class="sound-wave"><span></span><span></span><span></span><span></span></div>
+                        <span style="font-size:13px;color:#fca5a5;" data-i18n="voice_listening">Listening to your voice... Speak your weather query</span>
+                    </div>
+
+                    <!-- Input bar -->
+                    <div class="chat-input-bar">
+                        <button class="btn-mic" id="btn-voice-mic" title="Voice Input (Speech-to-Text)">
+                            🎙️
+                        </button>
+                        <input 
+                            type="text" 
+                            id="chat-query-input" 
+                            class="chat-input" 
+                            placeholder="Ask anything (e.g., 'Will it rain tomorrow?', 'Crop advisory for wheat')..."
+                            autocomplete="off"
+                            data-i18n-placeholder="chat_placeholder"
+                        />
+                        <button class="btn-send" id="btn-send-chat" onclick="handleChatSubmit()" title="Send query">
+                            ➤
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: LIVE WEATHER DASHBOARD -->
+            <section id="tab-dashboard" class="tab-pane">
+                <div class="dashboard-grid">
+                    <!-- Hero Card -->
+                    <div class="glass-card weather-hero">
+                        <div>
+                            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                                <div style="font-size:12px;color:#38bdf8;font-weight:700;letter-spacing:1px;text-transform:uppercase;">
+                                    📡 Real-Time Meteorological Station
+                                </div>
+                                <div class="atmosphere-badge" id="hero-atmosphere-badge" title="Dynamic Sky Atmosphere">
+                                    <span class="atm-dot"></span>
+                                    <span id="hero-atmosphere-text">Sky: Clear Atmosphere</span>
+                                </div>
+                            </div>
+                            <h2 style="font-size:32px;font-weight:800;margin:6px 0;" class="display-current-city">New Delhi</h2>
+                            <div class="hero-temp-section">
+                                <span class="hero-temp" id="hero-temperature">28</span>
+                                <span class="hero-deg">°C</span>
+                            </div>
+                            <div class="hero-condition">
+                                <span id="hero-condition-text">Partly Cloudy</span>
+                            </div>
+                            <div class="hero-details-row">
+                                <span id="hero-feels-like">Feels like 29°C</span>
+                                <span>•</span>
+                                <span id="hero-local-time">🕒 Local Station Time: --:--:--</span>
+                            </div>
+                        </div>
+                        <div class="hero-icon-large" id="hero-weather-icon">
+                            🌤️
+                        </div>
+                    </div>
+
+                    <!-- Key Atmospheric Metrics Grid -->
+                    <div class="metrics-grid">
+                        <div class="metric-box">
+                            <span class="metric-box-title">💧 <span data-i18n="humidity">Humidity</span></span>
+                            <span class="metric-box-val" id="val-humidity">62%</span>
+                            <span class="metric-box-sub">Dew Point: Normal</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-box-title">💨 <span data-i18n="wind">Wind Speed</span></span>
+                            <span class="metric-box-val" id="val-wind">12 km/h</span>
+                            <span class="metric-box-sub">Surface Boundary Layer</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-box-title">⏱️ <span data-i18n="pressure">Barometric Pressure</span></span>
+                            <span class="metric-box-val" id="val-pressure">1012 hPa</span>
+                            <span class="metric-box-sub">Mean Sea Level (MSL)</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-box-title">🍃 <span data-i18n="air_quality">Air Quality (AQI)</span></span>
+                            <span class="metric-box-val" id="val-aqi">78</span>
+                            <span class="metric-box-sub" id="val-aqi-category">Moderate</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 24-Hour Forecast Line Chart -->
+                <div class="glass-card" style="margin-bottom:20px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+                        <h3 style="font-size:16px;font-weight:700;" data-i18n="hourly_forecast">Hourly 24-Hour Trajectory</h3>
+                        <span style="font-size:12px;color:#94a3b8;">Temperature (°C) & Rain Probability (%)</span>
+                    </div>
+                    <div style="height:220px;position:relative;">
+                        <canvas id="hourlyChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- 7-Day Outlook List -->
+                <div class="glass-card">
+                    <h3 style="font-size:16px;font-weight:700;margin-bottom:14px;" data-i18n="seven_day_forecast">7-Day Meteorological Outlook</h3>
+                    <div id="daily-forecast-container">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: NWP MULTI-MODEL COMPARISON (GFS vs ECMWF vs ICON vs WRF) -->
+            <section id="tab-nwp" class="tab-pane">
+                <div class="glass-card" style="margin-bottom:20px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:18px;">
+                        <div>
+                            <h2 style="font-size:22px;font-weight:800;">Numerical Weather Prediction (NWP) Ensemble</h2>
+                            <p style="font-size:13px;color:#94a3b8;">Multi-model consensus comparing NOAA GFS, ECMWF IFS, DWD ICON, and regional mesoscale WRF.</p>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <span style="font-size:13px;color:#94a3b8;" data-i18n="confidence">Confidence Score:</span>
+                            <span style="font-size:20px;font-weight:800;color:#38bdf8;" id="nwp-confidence-score">92%</span>
+                            <span class="nwp-badge" id="nwp-confidence-badge" style="background:#22c55e22;color:#22c55e;">High Consensus</span>
+                        </div>
+                    </div>
+
+                    <!-- 4 NWP Model Summary Cards -->
+                    <div class="nwp-metrics-row">
+                        <div class="nwp-card" style="border-top:3px solid #38bdf8;">
+                            <div class="nwp-card-title" style="color:#38bdf8;">NOAA GFS</div>
+                            <span class="nwp-badge">Global 13 km</span>
+                            <div style="font-size:24px;font-weight:800;margin:8px 0;" id="nwp-gfs-temp">--°C</div>
+                            <p style="font-size:11.5px;color:#94a3b8;">Cycle: 00Z / 06Z / 12Z / 18Z</p>
+                        </div>
+                        <div class="nwp-card" style="border-top:3px solid #10b981;">
+                            <div class="nwp-card-title" style="color:#10b981;">ECMWF IFS</div>
+                            <span class="nwp-badge">High-Res 9 km</span>
+                            <div style="font-size:24px;font-weight:800;margin:8px 0;" id="nwp-ecmwf-temp">--°C</div>
+                            <p style="font-size:11.5px;color:#94a3b8;">World Benchmark Model</p>
+                        </div>
+                        <div class="nwp-card" style="border-top:3px solid #f59e0b;">
+                            <div class="nwp-card-title" style="color:#f59e0b;">DWD ICON</div>
+                            <span class="nwp-badge">Icosahedral 13 km</span>
+                            <div style="font-size:24px;font-weight:800;margin:8px 0;" id="nwp-icon-temp">--°C</div>
+                            <p style="font-size:11.5px;color:#94a3b8;">Non-hydrostatic Dynamics</p>
+                        </div>
+                        <div class="nwp-card" style="border-top:3px solid #ec4899;">
+                            <div class="nwp-card-title" style="color:#ec4899;">Mesoscale WRF</div>
+                            <span class="nwp-badge">Downscaled 3 km</span>
+                            <div style="font-size:24px;font-weight:800;margin:8px 0;" id="nwp-wrf-temp">--°C</div>
+                            <p style="font-size:11.5px;color:#94a3b8;">Boundary Layer Physics</p>
+                        </div>
+                    </div>
+
+                    <!-- NWP Multi-line Comparison Chart -->
+                    <div style="height:320px;position:relative;margin-bottom:16px;">
+                        <canvas id="nwpChart"></canvas>
+                    </div>
+
+                    <div style="padding:14px;background:rgba(15,23,42,0.6);border-radius:10px;border:1px solid rgba(255,255,255,0.06);font-size:13.5px;color:#cbd5e1;">
+                        <b>Meteorological Synoptic Analysis:</b> <span id="nwp-synoptic-text">Calculating model ensemble divergence...</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 4: DISASTER ALERTS & EARLY WARNING -->
+            <section id="tab-alerts" class="tab-pane">
+                <div style="margin-bottom:20px;">
+                    <h2 style="font-size:22px;font-weight:800;">Emergency Weather Alerts & Early Warning Feed</h2>
+                    <p style="font-size:13px;color:#94a3b8;">Standard Common Alerting Protocol (CAP) and IMD 4-Stage Warning System (Red / Orange / Yellow).</p>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1.2fr 0.8fr;gap:20px;">
+                    <div>
+                        <h3 style="font-size:16px;font-weight:700;margin-bottom:12px;">Active Local Alerts (<span class="display-current-city">New Delhi</span>)</h3>
+                        <div id="local-alerts-container">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                    <div>
+                        <h3 style="font-size:16px;font-weight:700;margin-bottom:12px;">National Weather Bulletins & Feeds</h3>
+                        <div id="national-alerts-container">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 5: SECTOR DECISION SUPPORT -->
+            <section id="tab-advisory" class="tab-pane">
+                <div style="margin-bottom:20px;">
+                    <h2 style="font-size:22px;font-weight:800;">Specialized Sector Decision Support System</h2>
+                    <p style="font-size:13px;color:#94a3b8;">Tailored agronomic advisories, aviation briefings, maritime sea states, and smart city flood risk.</p>
+                </div>
+
+                <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+                    <button class="tab-btn sector-pill active" data-sector="agriculture" onclick="loadSectorAdvisory('agriculture')">
+                        🌾 <span data-i18n="agri_advisory">Agriculture & Farmers</span>
+                    </button>
+                    <button class="tab-btn sector-pill" data-sector="aviation" onclick="loadSectorAdvisory('aviation')">
+                        ✈️ <span data-i18n="aviation_briefing">Aviation (METAR/TAF)</span>
+                    </button>
+                    <button class="tab-btn sector-pill" data-sector="marine" onclick="loadSectorAdvisory('marine')">
+                        🚢 <span data-i18n="marine_advisory">Marine & Coastal</span>
+                    </button>
+                    <button class="tab-btn sector-pill" data-sector="urban" onclick="loadSectorAdvisory('urban')">
+                        🏙️ <span data-i18n="urban_advisory">Smart Cities & Floods</span>
+                    </button>
+                </div>
+
+                <div id="advisory-detail-container">
+                    <!-- Populated dynamically by advisories.js -->
+                </div>
+            </section>
+
+            <!-- TAB 6: RADAR & SATELLITE GIS MAP -->
+            <section id="tab-radar" class="tab-pane">
+                <div class="glass-card">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+                        <div>
+                            <h2 style="font-size:20px;font-weight:800;">Live Precipitation Radar & GIS Overlay</h2>
+                            <p style="font-size:13px;color:#94a3b8;">High-resolution Doppler radar imagery from RainViewer and OpenStreetMap.</p>
+                        </div>
+                        <div id="radar-time-label" style="font-size:13px;font-weight:600;color:#38bdf8;">
+                            Radar Frame: Live
+                        </div>
+                    </div>
+
+                    <div id="radar-map"></div>
+
+                    <div class="radar-controls">
+                        <button class="btn-icon" id="btn-radar-play" onclick="toggleRadarAnimation()">
+                            ▶ Play Animation
+                        </button>
+                        <div style="font-size:12px;color:#94a3b8;">
+                            Blue/Green: Light Rain | Yellow: Moderate | Red/Purple: Severe Downpour
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 7: CLIMATE TRENDS & HISTORICAL ANALYSIS -->
+            <section id="tab-climate" class="tab-pane">
+                <div class="glass-card">
+                    <div style="margin-bottom:18px;">
+                        <h2 style="font-size:20px;font-weight:800;">Climate Trends & Historical Reanalysis (1995 - 2024)</h2>
+                        <p style="font-size:13px;color:#94a3b8;">Long-term decadal temperature shifts and precipitation anomalies for climate researchers.</p>
+                    </div>
+
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:16px;margin-bottom:20px;">
+                        <div class="metric-box">
+                            <span class="metric-box-title">🌡️ Decadal Warming Rate</span>
+                            <span class="metric-box-val" id="climate-warming-rate">+0.22°C / decade</span>
+                            <span class="metric-box-sub">South Asia Regional Mean</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-box-title">📈 Net Anomaly Since 1995</span>
+                            <span class="metric-box-val" id="climate-net-warming">+1.29°C</span>
+                            <span class="metric-box-sub">WMO Baseline 1991-2020</span>
+                        </div>
+                    </div>
+
+                    <div style="height:280px;position:relative;margin-bottom:20px;">
+                        <canvas id="climateChart"></canvas>
+                    </div>
+
+                    <div style="padding:16px;background:rgba(15,23,42,0.6);border-radius:10px;border:1px solid rgba(255,255,255,0.06);">
+                        <h4 style="font-size:15px;font-weight:700;margin-bottom:10px;">Scientific Research Findings:</h4>
+                        <ul id="climate-insights-list" style="padding-left:20px;font-size:13.5px;color:#cbd5e1;line-height:1.6;">
+                            <!-- Populated dynamically -->
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Mobile Access Modal -->
+    <div id="phone-modal" class="modal-overlay">
+        <div class="modal-content" style="text-align:center;">
+            <h3 style="font-size:18px;font-weight:700;margin-bottom:8px;">📱 Open WeatherGPT on Your Phone</h3>
+            <p style="font-size:13px;color:#94a3b8;margin-bottom:16px;">
+                Ensure your phone is connected to the <b>same Wi-Fi</b> (or your computer's Hotspot).
+            </p>
+
+            <div id="qr-code-container" style="background:#fff;padding:12px;border-radius:12px;display:inline-block;margin-bottom:16px;">
+                <img id="phone-qr-img" src="" alt="QR Code" style="width:190px;height:190px;display:block;" />
+            </div>
+
+            <div style="background:rgba(15,23,42,0.8);border:1px solid rgba(255,255,255,0.1);padding:10px 14px;border-radius:8px;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                <span id="phone-url-display" style="font-family:monospace;font-size:14px;color:#38bdf8;font-weight:600;">http://10.72.55.222:8000</span>
+                <button class="btn-tts" onclick="copyPhoneUrl()" style="color:#fff;background:rgba(56,189,248,0.25);">📋 Copy</button>
+            </div>
+
+            <button class="btn-locate" id="btn-close-phone" style="width:100%;justify-content:center;padding:10px;">Done</button>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="font-size:18px;font-weight:700;margin-bottom:14px;" data-i18n="settings">Platform Settings</h3>
+            <p style="font-size:13px;color:#94a3b8;margin-bottom:16px;">
+                WeatherGPT works out of the box with the built-in Meteorological Intelligence Engine. You can optionally add a Gemini API key for open-ended conversational generation.
+            </p>
+
+            <div style="margin-bottom:18px;">
+                <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px;color:#cbd5e1;" data-i18n="gemini_key_prompt">
+                    Gemini API Key (Optional)
+                </label>
+                <input 
+                    type="password" 
+                    id="gemini-api-key-input" 
+                    class="chat-input" 
+                    style="width:100%;" 
+                    placeholder="AIzaSy..." 
+                />
+            </div>
+
+            <div style="display:flex;justify-content:flex-end;gap:10px;">
+                <button class="btn-icon" id="btn-close-settings">Cancel</button>
+                <button class="btn-locate" id="btn-save-settings" style="padding:8px 16px;" data-i18n="save">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- External Libraries: Leaflet & Chart.js -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Application Scripts -->
+    <script src="/static/js/i18n.js"></script>
+    <script src="/static/js/voice.js"></script>
+    <script src="/static/js/charts.js"></script>
+    <script src="/static/js/map.js"></script>
+    <script src="/static/js/advisories.js"></script>
+    <script src="/static/js/chat.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

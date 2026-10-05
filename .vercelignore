@@ -1,0 +1,8 @@
+.git
+.github
+tests
+__pycache__
+Dockerfile
+docker-compose.yml
+PROJECT_SYNOPSIS.txt
+PROJECT_PRESENTATION_DOCUMENTATION.md
