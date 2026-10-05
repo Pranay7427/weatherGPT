@@ -252,19 +252,70 @@ function selectLocation(lat, lon, cityName) {
 }
 
 function handleGeolocation() {
-    if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(
-            (pos) => {
-                selectLocation(pos.coords.latitude, pos.coords.longitude, "My Location");
-            },
-            (err) => {
-                console.warn("Geolocation denied or error:", err);
-                alert("Could not access GPS location. Please type your city name.");
-            }
-        );
-    } else {
+    if (!("geolocation" in navigator)) {
         alert("Geolocation is not supported on this device.");
+        return;
     }
+
+    const input = document.getElementById("city-search-input");
+    const locateBtn = document.getElementById("btn-locate");
+    if (locateBtn) locateBtn.classList.add("loading");
+    if (input) input.value = "Detecting your location...";
+
+    navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+            const lat = pos.coords.latitude;
+            const lon = pos.coords.longitude;
+            let detectedName = "";
+
+            // 1. Try backend reverse geocoding API
+            try {
+                const geoResp = await fetch(`/api/reverse-geocode?lat=${lat}&lon=${lon}`);
+                if (geoResp.ok) {
+                    const geoData = await geoResp.json();
+                    if (geoData.name && !geoData.name.startsWith("Location (")) {
+                        detectedName = geoData.name;
+                    }
+                }
+            } catch (e) {
+                console.warn("Backend reverse-geocode error:", e);
+            }
+
+            // 2. Try fast client-side reverse geocoding fallback
+            if (!detectedName) {
+                try {
+                    const clientResp = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`);
+                    if (clientResp.ok) {
+                        const data = await clientResp.json();
+                        const city = data.city || data.locality || data.principalSubdivision;
+                        const state = data.principalSubdivision;
+                        if (city && state && city !== state) {
+                            detectedName = `${city}, ${state}`;
+                        } else if (city) {
+                            detectedName = city;
+                        }
+                    }
+                } catch (e) {
+                    console.warn("Client reverse-geocode error:", e);
+                }
+            }
+
+            // 3. Fallback to coordinates
+            if (!detectedName) {
+                detectedName = `GPS (${lat.toFixed(2)}°, ${lon.toFixed(2)}°)`;
+            }
+
+            if (locateBtn) locateBtn.classList.remove("loading");
+            selectLocation(lat, lon, detectedName);
+        },
+        (err) => {
+            console.warn("Geolocation denied or error:", err);
+            if (locateBtn) locateBtn.classList.remove("loading");
+            if (input) input.value = weatherAppState.cityName || "";
+            alert("Could not access GPS location. Please check browser permissions or search your city.");
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
 }
 
 async function loadWeatherData(lat, lon, cityName) {

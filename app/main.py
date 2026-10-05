@@ -8,7 +8,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from app.config import APP_TITLE, APP_VERSION, SUPPORTED_LANGUAGES, DEFAULT_LOCATIONS
-from app.services.weather_service import search_location, get_current_and_forecast, get_air_quality
+from app.services.weather_service import search_location, get_current_and_forecast, get_air_quality, reverse_geocode_coords
 from app.services.nwp_service import get_nwp_comparison
 from app.services.alert_service import evaluate_weather_alerts, get_simulated_live_feed
 from app.services.advisory_engine import (
@@ -71,6 +71,11 @@ async def list_default_locations():
 async def search_city(q: str = Query(..., min_length=1)):
     results = await search_location(q)
     return {"results": results}
+
+@app.get("/api/reverse-geocode")
+async def reverse_geocode(lat: float = Query(...), lon: float = Query(...)):
+    name = await reverse_geocode_coords(lat, lon)
+    return {"name": name, "latitude": lat, "longitude": lon}
 
 @app.get("/api/weather")
 async def get_weather(

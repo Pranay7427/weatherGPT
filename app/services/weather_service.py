@@ -129,6 +129,57 @@ async def search_location(query: str) -> List[Dict[str, Any]]:
         "display_name": f"{query.title()} (Assumed: New Delhi Region)"
     }]
 
+async def reverse_geocode_coords(lat: float, lon: float) -> str:
+    """Reverse geocode coordinates into a human-readable city/region name."""
+    cache_key = f"revgeo_{lat:.3f}_{lon:.3f}"
+    cached = _get_from_cache(cache_key)
+    if cached is not None:
+        return cached
+
+    # 1. Try OpenStreetMap Nominatim
+    try:
+        async with httpx.AsyncClient(timeout=4.0, headers={"User-Agent": "WeatherGPT/2.0 (meteorological-app)"}) as client:
+            resp = await client.get(
+                "https://nominatim.openstreetmap.org/reverse",
+                params={"lat": lat, "lon": lon, "format": "json", "zoom": 10}
+            )
+            if resp.status_code == 200:
+                data = resp.json()
+                addr = data.get("address", {})
+                city = (
+                    addr.get("city")
+                    or addr.get("town")
+                    or addr.get("village")
+                    or addr.get("municipality")
+                    or addr.get("county")
+                    or addr.get("state_district")
+                )
+                state = addr.get("state")
+                country = addr.get("country")
+
+                name = None
+                if city and state and city != state:
+                    name = f"{city}, {state}"
+                elif city and country:
+                    name = f"{city}, {country}"
+                elif city:
+                    name = city
+                elif state and country:
+                    name = f"{state}, {country}"
+                elif country:
+                    name = country
+
+                if name:
+                    _set_in_cache(cache_key, name)
+                    return name
+    except Exception as e:
+        print(f"Reverse geocode error (Nominatim): {e}")
+
+    # Fallback coordinate string
+    name = f"Location ({lat:.2f}°, {lon:.2f}°)"
+    _set_in_cache(cache_key, name)
+    return name
+
 async def get_current_and_forecast(lat: float, lon: float) -> Dict[str, Any]:
     """Retrieve current weather, 24-hour hourly, and 7-day forecast."""
     cache_key = f"weather_{lat:.3f}_{lon:.3f}"
